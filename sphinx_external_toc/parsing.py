@@ -3,11 +3,14 @@ from collections.abc import Mapping
 from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Union
+from sphinx.util import logging
 
 import yaml
 
 from ._compat import DC_SLOTS, field
 from .api import Document, FileItem, GlobItem, SiteMap, TocTree, UrlItem
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_SUBTREES_KEY = "subtrees"
 DEFAULT_ITEMS_KEY = "entries"
@@ -309,7 +312,8 @@ def _parse_docs_list(
     for child_path, doc_data in docs_list:
         docname = doc_data[FILE_KEY]
         if docname in site_map:
-            raise MalformedError(f"document file used multiple times: '{docname}'")
+        #     raise MalformedError(f"document file used multiple times: '{docname}'")
+            logger.info("[etoc] Document file used multiple times: '%s'", docname)
         child_item, child_docs_list = _parse_doc_item(
             doc_data,
             defaults,
