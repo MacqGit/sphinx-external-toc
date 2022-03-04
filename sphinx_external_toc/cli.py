@@ -94,7 +94,13 @@ def create_site(toc_file, path, extension, overwrite):
     show_default=True,
     help="The key-mappings to use.",
 )
-def create_toc(site_dir, extension, index, skip_match, guess_titles, file_format):
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(allow_dash=True, exists=False, file_okay=True, dir_okay=False),
+    help="Write to a file path.",
+)
+def create_toc(site_dir, extension, index, skip_match, guess_titles, file_format, output):
     """Create a ToC file from a project directory."""
     site_map = create_site_map_from_path(
         site_dir,
@@ -117,8 +123,14 @@ def create_toc(site_dir, extension, index, skip_match, guess_titles, file_format
             words = words[1:] if words and all(c.isdigit() for c in words[0]) else words
             site_map[docname].title = " ".join(words).capitalize()
     data = create_toc_dict(site_map)
-    click.echo(yaml.dump(data, sort_keys=False, default_flow_style=False))
-
+    content = yaml.dump(data, sort_keys=False, default_flow_style=False)
+    if output:
+        path = Path(output)
+        path.parent.mkdir(exist_ok=True, parents=True)
+        path.write_text(content, encoding="utf8")
+        click.secho(f"Written to: {path}", fg="green")
+    else:
+        click.echo(content)
 
 @main.command("migrate")
 @click.argument("toc_file", type=click.Path(exists=True, file_okay=True))
